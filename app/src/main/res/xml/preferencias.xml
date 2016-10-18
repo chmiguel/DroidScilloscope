@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preferencias_principal"
+    >
+
+<ListPreference
+    android:key="coloresGrafica1"
+    android:title="Colores del Canal 1"
+    android:summary="Cambia el color de la grafica del canal 1"
+    android:entries="@array/coloresGrafica1"
+    android:entryValues="@array/valoresColores1"
+    android:defaultValue="0"
+    ></ListPreference>
+    <ListPreference
+        android:key="coloresGrafica2"
+        android:title="Colores del Canal 2"
+        android:summary="Cambia el color de la grafica del canal 2"
+        android:entries="@array/coloresGrafica2"
+        android:entryValues="@array/valoresColores2"
+        android:defaultValue="0"
+        ></ListPreference>
+    <CheckBoxPreference
+        android:key="sombreado"
+        android:title="Sombrear graficas"
+        android:summary="dibuja sombras en las graficas (ESTO PODRÍA RELENTIZAR LA GRAFICACIÓN DE LAS SEÑALES)"
+        />
+</PreferenceScreen>
