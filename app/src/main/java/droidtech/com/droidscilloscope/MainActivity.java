@@ -73,8 +73,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     RadioButton rbc2;
     RadioButton rbd;
     RadioGroup rg1;
+    RadioGroup rg2;
+    RadioGroup rg3;
     boolean series1Removida=false;
     boolean series2Removida=false;
+    String freqX;
+    String freqY;
+    String Tx;
+    String Ty;
     // TODO: Al conectar a un dispositvo USB se solicita un permiso al usuario
     // este broadcast se encarga de recoger la respuesta del usuario.
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
@@ -122,12 +128,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        //textView = (TextView) findViewById(R.id.textView1);
-        rbc1= (RadioButton) findViewById(R.id.rbc1);
-        rbc2= (RadioButton) findViewById(R.id.rbc2);
-        rbd= (RadioButton) findViewById(R.id.rbd);
+
         rg1 = (RadioGroup) findViewById(R.id.modGroup);
         rg1.setOnCheckedChangeListener(this);
+        rg2= (RadioGroup) findViewById(R.id.rgSignalType);
+        rg2.setOnCheckedChangeListener(this);
+        rg3= (RadioGroup) findViewById(R.id.triggerGroup);
+        rg3.setOnCheckedChangeListener(this);
 
         mySimpleXYPlot = (XYPlot) findViewById(R.id.mySimpleXYPlot);
 
@@ -140,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         series3Numbers = crearSerieX();
         series4Numbers= crearSerieY();
         series5Numbers= crearSerieY2();
+
 
         series1 = new SimpleXYSeries(series3Numbers,series4Numbers, "Ch1");
         series2 = new SimpleXYSeries(series3Numbers,series5Numbers, "Ch2");
@@ -519,15 +527,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int i = 0;
             byte[] datos;
             byte[] datosNull;
-            ArrayList<Number> datosDouble= crearSerieY();
 
-            String line = new String();
-
-            Number [] muestreo={0.0};
             float y=5;
-            int bufferMaxLength = epIN.getMaxPacketSize();
-            ByteBuffer mBuffer = ByteBuffer.allocate(103);
-            ByteBuffer mBuffer2 = ByteBuffer.allocate(103);
+            ByteBuffer mBuffer = ByteBuffer.allocate(105);
+            ByteBuffer mBuffer2 = ByteBuffer.allocate(105);
             datos = mBuffer2.array();
             datosNull= mBuffer2.array();
             for(int s=0; s<101;s++){
@@ -563,14 +566,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     y= (y*5.0f)/255.0f;
                                 }
 //
-                                publishProgress(y,muestreo);
+                                publishProgress(y);
                                 break;
 
                             }
                         }
                     }
                     if(modo=="high_mode") {
-                        mUsbDeviceConnection.bulkTransfer(epIN, datos, 103, 1000);
+                        mUsbDeviceConnection.bulkTransfer(epIN, datos, 105, 1000);
                         if ((char)datos[101]=='T')
                         {
                             if((char)datos[102]=='x') {
@@ -585,6 +588,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         series4Numbers.set(k, 0);
                                     }
                                 }
+                                freqX= String.format("F<25");
+                                Tx= String.format("T>40ms");
+
                             }
                             if((char)datos[102]=='2') {
                                 for (int k = 0; k < 101; k++) {
@@ -597,12 +603,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         series5Numbers.set(k, 0);
                                     }
                                 }
+                                freqY= String.format("F<25");
+                                Ty= String.format("T>40ms");
                             }
 
                         }
                         else {
                             if ((char) datos[102] == 'x')
                             {
+                                char multiplicador=' ';
+                                char multiplicador2='u';
+                                double freqNumX= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8);
+                                double TNumX= (byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8;
+
+                                //freq= Byte.toString(byteFreq2)+ Byte.toString(byteFreq1);
+                                if(freqNumX>1000){
+                                    freqNumX=freqNumX/1000;
+                                    multiplicador='k';
+                                }
+
+                                if (TNumX>1000){
+                                    TNumX=TNumX/1000;
+                                    multiplicador2='m';
+                                }
+                                freqX= String.format("%5.2f%c",freqNumX,multiplicador);
+                                Tx= String.format("%5.2f%cs",TNumX,multiplicador2);
+
+                                freqNumX= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8);
+                                if (freqNumX<25)
+                                {
+                                    freqX= String.format("F<25");
+                                    Tx= String.format("T>40ms");
+                                }
+
                                 for (int k = 0; k < 101; k++) {
                                     if (datos[k] < 0) {
                                         if ((char) datos[102] == 'x') {
@@ -618,7 +651,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                             if ((char) datos[102] == '2')
                             {
+                                char multiplicador=' ';
+                                char multiplicador2='u';
+                                double freqNumy= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333333*8);
+                                double TNumy= (byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8;
+                                //freq= Byte.toString(byteFreq2)+ Byte.toString(byteFreq1);
+                                if(freqNumy>1000){
+                                    freqNumy=freqNumy/1000;
+                                    multiplicador='k';
+                                }
+                                if (TNumy>1000){
+                                    TNumy=TNumy/1000;
+                                    multiplicador2='m';
+                                }
+                                freqY= String.format("%5.2f%c",freqNumy,multiplicador);
+                                Ty= String.format("%5.2f%cs",TNumy,multiplicador2);
+                                freqNumy= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333333*8);
 
+                                if (freqNumy<25)
+                                {
+                                    freqY= String.format("F<25");
+                                    Ty= String.format("T>40ms");
+                                }
                                 for (int k = 0; k < 101; k++) {
                                     if (datos[k] < 0) {
 
@@ -659,6 +713,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         series1 = reconstruir(series1, series4Numbers);
                         series2 = reconstruir(series2, series5Numbers);
+                        mySimpleXYPlot.setTitle("F1: "+freqX+"Hz"+"  T1: "+Tx+"          F2: "+ freqY+"Hz"+"  T2: "+Ty);
+
                         mySimpleXYPlot.invalidate();
 
 
@@ -666,6 +722,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(modo=="low_mode")
             {
                 float entrada = (float) values[0];
+
                 series1 = desplazar(series1, entrada);
                 mySimpleXYPlot.invalidate();
             }
@@ -828,41 +885,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        switch (checkedId){
 
-            case R.id.rbc1:
-                if(series1Removida==true){
-                    mySimpleXYPlot.addSeries(series1,series1Format);
-                    series1Removida=false;
-                }
-                mySimpleXYPlot.removeSeries(series2);
-                series2Removida=true;
-                mySimpleXYPlot.invalidate();
+        if(group.getId()==R.id.modGroup) {
 
-                break;
-            case R.id.rbc2:
 
-                mySimpleXYPlot.removeSeries(series1);
-                if(series2Removida==true){
-                    mySimpleXYPlot.addSeries(series2,series2Format);
-                    series2Removida=false;
-                }
-                mySimpleXYPlot.invalidate();
-                series1Removida=true;
-                break;
-            case R.id.rbd:
-                if(series2Removida==true){
-                    mySimpleXYPlot.addSeries(series2,series2Format);
-                    series2Removida=false;
-                }
-                if(series1Removida==true){
-                    mySimpleXYPlot.addSeries(series1,series1Format);
-                    series1Removida=false;
-                }
-                mySimpleXYPlot.invalidate();
+            switch (checkedId) {
 
-                break;
+                case R.id.rbc1:
+                    if (series1Removida == true) {
+                        mySimpleXYPlot.addSeries(series1, series1Format);
+                        series1Removida = false;
+                    }
+                    mySimpleXYPlot.removeSeries(series2);
+                    series2Removida = true;
+                    mySimpleXYPlot.invalidate();
+
+                    break;
+                case R.id.rbc2:
+
+                    mySimpleXYPlot.removeSeries(series1);
+                    if (series2Removida == true) {
+                        mySimpleXYPlot.addSeries(series2, series2Format);
+                        series2Removida = false;
+                    }
+                    mySimpleXYPlot.invalidate();
+                    series1Removida = true;
+                    break;
+                case R.id.rbd:
+                    if (series2Removida == true) {
+                        mySimpleXYPlot.addSeries(series2, series2Format);
+                        series2Removida = false;
+                    }
+                    if (series1Removida == true) {
+                        mySimpleXYPlot.addSeries(series1, series1Format);
+                        series1Removida = false;
+                    }
+                    mySimpleXYPlot.invalidate();
+
+                    break;
+            }
+        }
+        else if (group.getId()==R.id.rgSignalType)
+        {
+            switch (checkedId){
+                case R.id.rbAC:
+
+                    mySimpleXYPlot.setRangeBoundaries(-6, BoundaryMode.FIXED,6,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,13);
+                    mySimpleXYPlot.invalidate();
+                    break;
+                case R.id.rbDC:
+                    mySimpleXYPlot.setRangeBoundaries(0, BoundaryMode.FIXED,6,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,7);
+                    mySimpleXYPlot.invalidate();
+
+                    break;
+            }
+
+        }
+        else if(group.getId()==R.id.triggerGroup){
+            switch (checkedId) {
+                case R.id.rBL2H:
+                    dataOut[0] = 'H';
+                    new Envio().run();
+                    break;
+                case R.id.rbH2L:
+                    dataOut[0] = 'L';
+                    new Envio().run();
+                    break;
+            }
         }
     }
+
+   public int byteToInt (byte num){
+       int dato=0;
+       if(num>0){
+           dato=num;
+       }
+       else if((int)num<0){
+           dato= num+256;
+       }
+       return dato;
+   }
 
 }
