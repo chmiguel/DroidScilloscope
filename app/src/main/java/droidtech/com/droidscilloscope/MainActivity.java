@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Paint;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public byte[] dataOut = {'0'};
     public boolean cambio= false;
     NumberPicker np=null;
+    NumberPicker np2=null;
     boolean conexion_usb= false;
     RadioButton rbc1;
     RadioButton rbc2;
@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String freqY;
     String Tx;
     String Ty;
+    double vpp=5.0d;
+    int offset=0;
     // TODO: Al conectar a un dispositvo USB se solicita un permiso al usuario
     // este broadcast se encarga de recoger la respuesta del usuario.
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // esto es para ocultar el teclado
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         rg1 = (RadioGroup) findViewById(R.id.modGroup);
@@ -164,19 +167,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //-----------------------------------------------------------------------
         series1Format.setInterpolationParams(
-                new CatmullRomInterpolator.Params(3, CatmullRomInterpolator.Type.Centripetal));
+                new CatmullRomInterpolator.Params(2, CatmullRomInterpolator.Type.Centripetal));
         series2Format.setInterpolationParams(
-                new CatmullRomInterpolator.Params(3, CatmullRomInterpolator.Type.Centripetal));
+                new CatmullRomInterpolator.Params(2, CatmullRomInterpolator.Type.Centripetal));
 
         //-----------------------------------------------------------------------
         mySimpleXYPlot.addSeries(series1,series1Format);
         mySimpleXYPlot.addSeries(series2,series2Format);
         mySimpleXYPlot.setGridPadding(10,10,30,20);
         mySimpleXYPlot.setDomainBoundaries(0, BoundaryMode.FIXED,10,BoundaryMode.FIXED);
-        mySimpleXYPlot.setRangeBoundaries(0, BoundaryMode.FIXED,6,BoundaryMode.FIXED);
+        mySimpleXYPlot.setRangeBoundaries(-10, BoundaryMode.FIXED,10,BoundaryMode.FIXED);
         mySimpleXYPlot.setRangeTopMax(20);
         mySimpleXYPlot.setDomainStep(XYStepMode.SUBDIVIDE,11);
-        mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,7);
+        mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
         mySimpleXYPlot.setRangeLabel("Voltaje");
         mySimpleXYPlot.setDomainLabel("Tiempo");
 
@@ -191,6 +194,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         np.setValue(1);
         np.setWrapSelectorWheel(false);
         np.setOnValueChangedListener(MainActivity.this);
+
+        np2= (NumberPicker) findViewById(R.id.volDiv);
+        String [] rangos= {"1V/div","2V/div","3V/div","4V/div"};
+        np2.setMaxValue(3);
+        np2.setMinValue(0);
+        np2.setDisplayedValues(rangos);
+        np2.setValue(1);
+        np2.setWrapSelectorWheel(false);
+        np2.setOnValueChangedListener(MainActivity.this);
         //np.clearFocus();
 
     }
@@ -211,7 +223,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String seleccion = sharedPref.getString("coloresGrafica1", "0");
         String seleccion2 = sharedPref.getString("coloresGrafica2", "0");
         boolean sombreado = sharedPref.getBoolean("sombreado",false);
-        Paint pincel = new Paint();
+        boolean boolOffset = sharedPref.getBoolean("offset",false);
+        if(boolOffset){
+            offset=128;
+        }
+        else {
+            offset=0;
+        }
+        String seleccion3 = sharedPref.getString("vpp","0");
+        switch (seleccion3){
+            case "0":
+                vpp=5.0d;
+                break;
+            case "1":
+                vpp=10.0d;
+                break;
+            case "2":
+                vpp=20.0d;
+                break;
+            case "3":
+                vpp=30.0d;
+                break;
+        }
         switch (seleccion){
             case "0":
                 series1Format.configure(getApplicationContext(), R.xml.formater_yellow);
@@ -271,241 +304,269 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if(conexion_usb==true) {
-            switch (v.getId()) {
-                case R.id.mySimpleXYPlot:
-                    Toast.makeText(this, "pulsaste", Toast.LENGTH_SHORT).show();
-                    break;
-                case R.id.btn1us:
-                        dataOut[0] = 'a';
-                        modo = "high_mode";
-                        new Envio().run();
-                        series1.setTitle("Tiempo[10us/DIV]");
-                        mySimpleXYPlot.setDomainLabel("10us/DIV");
-                        Log.d("envio ", "a");
-
-                    break;
-                case R.id.btn2us:
-                        dataOut[0] = 'b';
-                        modo = "high_mode";
-                        new Envio().run();
-                        series1.setTitle("Tiempo[20us/DIV]");
-                        mySimpleXYPlot.setDomainLabel("20us/DIV");
-                        Log.d("envio ", "b");
-                    break;
-                case R.id.btn5us:
-                        dataOut[0] = 'c';
-                        modo = "high_mode";
-                        new Envio().run();
-                        series1.setTitle("Tiempo[50us/DIV]");
-                        mySimpleXYPlot.setDomainLabel("50us/DIV");
-                    break;
-                case R.id.btn10us:
-
-                        dataOut[0] = 'd';
-                        modo = "high_mode";
-                        new Envio().run();
-                        series1.setTitle("Tiempo[100us/DIV]");
-                        mySimpleXYPlot.setDomainLabel("100us/DIV");
-                    break;
-                case R.id.btn20us:
-                        dataOut[0] = 'e';
-                        modo = "high_mode";
-                        new Envio().run();
-                        series1.setTitle("Tiempo[200us/DIV]");
-                        mySimpleXYPlot.setDomainLabel("200us/DIV");
-                    break;
-                case R.id.btn40us:
-                    dataOut[0] = 'f';
-                    new Envio().run();
-                    modo = "high_mode";
-                    series1.setTitle("Tiempo[400us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("400us/DIV");
-                    break;
-                case R.id.btn80us:
-                    dataOut[0] = 'g';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[800us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("800us/DIV");
-                    break;
-                case R.id.btn100us:
-                    dataOut[0] = 'h';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[1ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("1ms/DIV");
-                    break;
-                case R.id.btn200us:
-                    dataOut[0] = 'i';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[2ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("2ms/DIV");
-                    break;
-                case R.id.btn400us:
-                    dataOut[0] = 'j';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[4ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("4ms/DIV");
-                    break;
-                case R.id.btn500us:
-                    dataOut[0] = 'k';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[5ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("5ms/DIV");
-                    break;
-                case R.id.btn1000us:
-                    dataOut[0] = 'l';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[10ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("10ms/DIV");
-                    break;
-                case R.id.btn2000us:
-                    dataOut[0] = 'm';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[20ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("20ms/DIV");
-                    break;
-                case R.id.btn25ms:
-                    dataOut[0] = '0';
-                    modo = "low_mode";
-                    new Envio().run();
-                    break;
-                case R.id.btn40ms:
-                    dataOut[0] = '1';
-                    modo = "low_mode";
-                    new Envio().run();
-                    break;
-
-            }
-        }
-        else
-        {
-            Toast.makeText(this, "No estas conectado, por favor reconecta", Toast.LENGTH_SHORT).show();
-        }
+//        if(conexion_usb==true) {
+//            switch (v.getId()) {
+//                case R.id.mySimpleXYPlot:
+//                    Toast.makeText(this, "pulsaste", Toast.LENGTH_SHORT).show();
+//                    break;
+//                case R.id.btn1us:
+//                        dataOut[0] = 'a';
+//                        modo = "high_mode";
+//                        new Envio().run();
+//                        series1.setTitle("Tiempo[10us/DIV]");
+//                        mySimpleXYPlot.setDomainLabel("10us/DIV");
+//                        Log.d("envio ", "a");
+//
+//                    break;
+//                case R.id.btn2us:
+//                        dataOut[0] = 'b';
+//                        modo = "high_mode";
+//                        new Envio().run();
+//                        series1.setTitle("Tiempo[20us/DIV]");
+//                        mySimpleXYPlot.setDomainLabel("20us/DIV");
+//                        Log.d("envio ", "b");
+//                    break;
+//                case R.id.btn5us:
+//                        dataOut[0] = 'c';
+//                        modo = "high_mode";
+//                        new Envio().run();
+//                        series1.setTitle("Tiempo[50us/DIV]");
+//                        mySimpleXYPlot.setDomainLabel("50us/DIV");
+//                    break;
+//                case R.id.btn10us:
+//
+//                        dataOut[0] = 'd';
+//                        modo = "high_mode";
+//                        new Envio().run();
+//                        series1.setTitle("Tiempo[100us/DIV]");
+//                        mySimpleXYPlot.setDomainLabel("100us/DIV");
+//                    break;
+//                case R.id.btn20us:
+//                        dataOut[0] = 'e';
+//                        modo = "high_mode";
+//                        new Envio().run();
+//                        series1.setTitle("Tiempo[200us/DIV]");
+//                        mySimpleXYPlot.setDomainLabel("200us/DIV");
+//                    break;
+//                case R.id.btn40us:
+//                    dataOut[0] = 'f';
+//                    new Envio().run();
+//                    modo = "high_mode";
+//                    series1.setTitle("Tiempo[400us/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("400us/DIV");
+//                    break;
+//                case R.id.btn80us:
+//                    dataOut[0] = 'g';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[800us/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("800us/DIV");
+//                    break;
+//                case R.id.btn100us:
+//                    dataOut[0] = 'h';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[1ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("1ms/DIV");
+//                    break;
+//                case R.id.btn200us:
+//                    dataOut[0] = 'i';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[2ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("2ms/DIV");
+//                    break;
+//                case R.id.btn400us:
+//                    dataOut[0] = 'j';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[4ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("4ms/DIV");
+//                    break;
+//                case R.id.btn500us:
+//                    dataOut[0] = 'k';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[5ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("5ms/DIV");
+//                    break;
+//                case R.id.btn1000us:
+//                    dataOut[0] = 'l';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[10ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("10ms/DIV");
+//                    break;
+//                case R.id.btn2000us:
+//                    dataOut[0] = 'm';
+//                    modo = "high_mode";
+//                    new Envio().run();
+//                    series1.setTitle("Tiempo[20ms/DIV]");
+//                    mySimpleXYPlot.setDomainLabel("20ms/DIV");
+//                    break;
+//                case R.id.btn25ms:
+//                    dataOut[0] = '0';
+//                    modo = "low_mode";
+//                    new Envio().run();
+//                    break;
+//                case R.id.btn40ms:
+//                    dataOut[0] = '1';
+//                    modo = "low_mode";
+//                    new Envio().run();
+//                    break;
+//
+//            }
+//        }
+//        else
+//        {
+//            Toast.makeText(this, "No estas conectado, por favor reconecta", Toast.LENGTH_SHORT).show();
+//        }
     }
 
 
 
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        if(conexion_usb==true) {
-            switch (newVal) {
+        if(picker.getId()==R.id.np) {
+            if (conexion_usb == true) {
+                switch (newVal) {
 
-                case 0:
-                    dataOut[0] = 'a';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[10us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("10us/DIV");
-                    Log.d("envio ", "a");
-                    break;
-                case 1:
-                    dataOut[0] = 'b';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[20us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("20us/DIV");
-                    Log.d("envio ", "b");
-                    break;
-                case 2:
-                    dataOut[0] = 'c';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[50us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("50us/DIV");
-                    break;
-                case 3:
-                    dataOut[0] = 'd';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[100us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("100us/DIV");
-                    break;
-                case 4:
-                    dataOut[0] = 'e';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[200us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("200us/DIV");
-                    break;
-                case 5:
-                    dataOut[0] = 'f';
-                    new Envio().run();
-                    modo = "high_mode";
-                    series1.setTitle("Tiempo[400us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("400us/DIV");
-                    break;
-                case 6:
-                    dataOut[0] = 'g';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[800us/DIV]");
-                    mySimpleXYPlot.setDomainLabel("800us/DIV");
-                    break;
-                case 7:
-                    dataOut[0] = 'h';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[1ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("1ms/DIV");
-                    break;
-                case 8:
-                    dataOut[0] = 'i';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[2ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("2ms/DIV");
-                    break;
-                case 9:
-                    dataOut[0] = 'j';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[4ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("4ms/DIV");
-                    break;
-                case 10:
-                    dataOut[0] = 'k';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[5ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("5ms/DIV");
-                    break;
-                case 11:
-                    dataOut[0] = 'l';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[10ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("10ms/DIV");
-                    break;
-                case 12:
-                    dataOut[0] = 'm';
-                    modo = "high_mode";
-                    new Envio().run();
-                    series1.setTitle("Tiempo[20ms/DIV]");
-                    mySimpleXYPlot.setDomainLabel("20ms/DIV");
-                    break;
-                case 13:
-                    dataOut[0] = '0';
-                    modo = "low_mode";
-                    new Envio().run();
-                    break;
-                case 14:
-                    dataOut[0] = '1';
-                    modo = "low_mode";
-                    new Envio().run();
-                    break;
+                    case 0:
+                        dataOut[0] = 'a';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[10us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("10us/DIV");
+                        Log.d("envio ", "a");
+                        break;
+                    case 1:
+                        dataOut[0] = 'b';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[20us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("20us/DIV");
+                        Log.d("envio ", "b");
+                        break;
+                    case 2:
+                        dataOut[0] = 'c';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[50us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("50us/DIV");
+                        break;
+                    case 3:
+                        dataOut[0] = 'd';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[100us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("100us/DIV");
+                        break;
+                    case 4:
+                        dataOut[0] = 'e';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[200us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("200us/DIV");
+                        break;
+                    case 5:
+                        dataOut[0] = 'f';
+                        new Envio().run();
+                        modo = "high_mode";
+                        series1.setTitle("Tiempo[400us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("400us/DIV");
+                        break;
+                    case 6:
+                        dataOut[0] = 'g';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[800us/DIV]");
+                        mySimpleXYPlot.setDomainLabel("800us/DIV");
+                        break;
+                    case 7:
+                        dataOut[0] = 'h';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[1ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("1ms/DIV");
+                        break;
+                    case 8:
+                        dataOut[0] = 'i';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[2ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("2ms/DIV");
+                        break;
+                    case 9:
+                        dataOut[0] = 'j';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[4ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("4ms/DIV");
+                        break;
+                    case 10:
+                        dataOut[0] = 'k';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[5ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("5ms/DIV");
+                        break;
+                    case 11:
+                        dataOut[0] = 'l';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[10ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("10ms/DIV");
+                        break;
+                    case 12:
+                        dataOut[0] = 'm';
+                        modo = "high_mode";
+                        new Envio().run();
+                        series1.setTitle("Tiempo[20ms/DIV]");
+                        mySimpleXYPlot.setDomainLabel("20ms/DIV");
+                        break;
+                    case 13:
+                        dataOut[0] = '0';
+                        modo = "low_mode";
+                        new Envio().run();
+                        break;
+                    case 14:
+                        dataOut[0] = '1';
+                        modo = "low_mode";
+                        new Envio().run();
+                        break;
 
+                }
+            } else {
+                Toast.makeText(this, "No estas conectado, por favor reconecta", Toast.LENGTH_SHORT).show();
             }
         }
-        else
-        {
-            Toast.makeText(this,"No estas conectado, por favor reconecta",Toast.LENGTH_SHORT).show();
+        else{
+            switch (newVal){
+                case 0:
+                    mySimpleXYPlot.setRangeBoundaries(-5, BoundaryMode.FIXED,5,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
+                    mySimpleXYPlot.invalidate();
+                    break;
+                case 1:
+                    mySimpleXYPlot.setRangeBoundaries(-10, BoundaryMode.FIXED,10,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
+                    mySimpleXYPlot.invalidate();
+                    break;
+                case 2:
+                    mySimpleXYPlot.setRangeBoundaries(-15, BoundaryMode.FIXED,15,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
+                    mySimpleXYPlot.invalidate();
+                    break;
+                case 3:
+                    mySimpleXYPlot.setRangeBoundaries(-20, BoundaryMode.FIXED,20,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeTopMax(20);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
+                    mySimpleXYPlot.invalidate();
+                    break;
+            }
         }
     }
 
@@ -526,12 +587,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             int i = 0;
             byte[] datos;
+            byte[] datos1;
+            byte[] datos2;
+            byte[] datos3;
+            byte[] datos4;
+            byte[] datosProm;
             byte[] datosNull;
-
+            int conteo=0;
             float y=5;
             ByteBuffer mBuffer = ByteBuffer.allocate(105);
             ByteBuffer mBuffer2 = ByteBuffer.allocate(105);
             datos = mBuffer2.array();
+            datos1 = mBuffer2.array();
+            datos2 = mBuffer2.array();
+            datos3 = mBuffer2.array();
+            datos4 = mBuffer2.array();
+            datosProm = mBuffer2.array();
             datosNull= mBuffer2.array();
             for(int s=0; s<101;s++){
                 datosNull[s]=100;
@@ -609,45 +680,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         }
                         else {
-                            if ((char) datos[102] == 'x')
-                            {
-                                char multiplicador=' ';
-                                char multiplicador2='u';
-                                double freqNumX= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8);
-                                double TNumX= (byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8;
+                            if ((char) datos[102] == 'x') {
+                                char multiplicador = ' ';
+                                char multiplicador2 = 'u';
+                                double freqNumX = 1000000 / ((byteToInt(datos[103]) + 256 * byteToInt(datos[104])) * 0.083333 * 8);
+                                double TNumX = (byteToInt(datos[103]) + 256 * byteToInt(datos[104])) * 0.083333 * 8;
 
                                 //freq= Byte.toString(byteFreq2)+ Byte.toString(byteFreq1);
-                                if(freqNumX>1000){
-                                    freqNumX=freqNumX/1000;
-                                    multiplicador='k';
+                                if (freqNumX > 1000) {
+                                    freqNumX = freqNumX / 1000;
+                                    multiplicador = 'k';
                                 }
 
-                                if (TNumX>1000){
-                                    TNumX=TNumX/1000;
-                                    multiplicador2='m';
+                                if (TNumX > 1000) {
+                                    TNumX = TNumX / 1000;
+                                    multiplicador2 = 'm';
                                 }
-                                freqX= String.format("%5.2f%c",freqNumX,multiplicador);
-                                Tx= String.format("%5.2f%cs",TNumX,multiplicador2);
+                                freqX = String.format("%5.2f%c", freqNumX, multiplicador);
+                                Tx = String.format("%5.2f%cs", TNumX, multiplicador2);
 
-                                freqNumX= 1000000/((byteToInt(datos[103])+256*byteToInt(datos[104]))*0.083333*8);
-                                if (freqNumX<25)
-                                {
-                                    freqX= String.format("F<25");
-                                    Tx= String.format("T>40ms");
+                                freqNumX = 1000000 / ((byteToInt(datos[103]) + 256 * byteToInt(datos[104])) * 0.083333 * 8);
+                                if (freqNumX < 25) {
+                                    freqX = String.format("F<25");
+                                    Tx = String.format("T>40ms");
                                 }
+
 
                                 for (int k = 0; k < 101; k++) {
                                     if (datos[k] < 0) {
                                         if ((char) datos[102] == 'x') {
-                                            series4Numbers.set(k, (Number) ((datos[k] + 256) * 5.0d / 255.0d));
+                                            series4Numbers.set(k, (Number) (((datos[k] + 256 - offset) * (vpp / 255.0d))));
                                         }
 
                                     } else {
                                         if ((char) datos[102] == 'x') {
-                                            series4Numbers.set(k, (Number) ((datos[k]) * 5.0d / 255.0d));
+                                            series4Numbers.set(k, (Number) (((datos[k] - offset) * (vpp / 255.0d))));
                                         }
                                     }
                                 }
+
                             }
                             if ((char) datos[102] == '2')
                             {
@@ -676,13 +747,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 for (int k = 0; k < 101; k++) {
                                     if (datos[k] < 0) {
 
-                                        series5Numbers.set(k, (Number) ((datos[k] + 256) * 5.0d / 255.0d));
+                                        double datNum= (((datos[k] + 256-offset) * (vpp / 255.0d)));
+
+                                        series5Numbers.set(k, (Number) datNum );
 
 
                                     } else
                                     {
 
-                                        series5Numbers.set(k, (Number) ((datos[k]) * 5.0d / 255.0d));
+                                        series5Numbers.set(k, (Number) ((datos[k]-offset) *( vpp/ 255.0d)));
 
                                     }
                                 }
@@ -696,8 +769,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            publishProgress(y);
 
+                        publishProgress(y);
                     }
 
                 }
@@ -930,15 +1003,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switch (checkedId){
                 case R.id.rbAC:
 
-                    mySimpleXYPlot.setRangeBoundaries(-6, BoundaryMode.FIXED,6,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeBoundaries(-5, BoundaryMode.FIXED,5,BoundaryMode.FIXED);
                     mySimpleXYPlot.setRangeTopMax(20);
-                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,13);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
                     mySimpleXYPlot.invalidate();
                     break;
                 case R.id.rbDC:
-                    mySimpleXYPlot.setRangeBoundaries(0, BoundaryMode.FIXED,6,BoundaryMode.FIXED);
+                    mySimpleXYPlot.setRangeBoundaries(-5, BoundaryMode.FIXED,0,BoundaryMode.FIXED);
                     mySimpleXYPlot.setRangeTopMax(20);
-                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,7);
+                    mySimpleXYPlot.setRangeStep(XYStepMode.SUBDIVIDE,11);
                     mySimpleXYPlot.invalidate();
 
                     break;

@@ -24,4 +24,18 @@
         android:title="Sombrear graficas"
         android:summary="dibuja sombras en las graficas (ESTO PODRÍA RELENTIZAR LA GRAFICACIÓN DE LAS SEÑALES)"
         />
+    <ListPreference
+        android:key="vpp"
+        android:title="Configura Vpp"
+        android:summary="Cambia la escala de multiplicacion"
+        android:entries="@array/nombresVpp"
+        android:entryValues="@array/valoresVpp"
+        android:defaultValue="0"
+        ></ListPreference>
+
+    <CheckBoxPreference
+        android:key="offset"
+        android:title="Poner offset"
+        android:summary=" coloca un offset a la grafica"
+        />
 </PreferenceScreen>
