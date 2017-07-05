@@ -20,7 +20,7 @@
         app:legendIconHeight="0dp"
         app:legendIconWidth="0dp"
         app:legendHeight="25dp"
-        android:layout_weight="20"
+        android:layout_weight="40"
         android:clickable="true"
         android:onClick="onClick"
         android:visibility="visible"
@@ -46,8 +46,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="40dp"
+                android:paddingTop="40dp"
+                android:paddingLeft="40dp"
+                android:paddingRight="40dp"
+                android:paddingBottom="0dp"
                 >
+
                 <TextView
                     android:id="@+id/textlbl1"
                     android:layout_width="wrap_content"
@@ -62,160 +66,238 @@
                     android:layout_marginLeft="0dp"
                     android:layout_marginBottom="0dp"
                     />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="50"
+                    android:orientation="horizontal"
+                    >
+                    <TableLayout
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content">
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <NumberPicker
+                                android:layout_marginTop="0dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:id="@+id/volDiv"
+                                android:theme="@style/AppTheme"
+                                android:scaleX="0.8"
+                                android:scaleY="0.8"
+                                />
+                            <RadioGroup
+                                android:paddingTop="50dp"
+                                android:paddingLeft="40dp"
+                                android:paddingRight="10dp"
+                                android:id="@+id/rgSignalType"
+
+                                >
+                                <RadioButton
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="AC"
+                                    android:id="@+id/rbAC"
+                                    android:checked="true"
+                                    android:textColor="#ffffff"
+                                    />
+                                <RadioButton
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="DC"
+                                    android:id="@+id/rbDC"
+
+                                    android:textColor="#ffffff"
+                                    />
+                            </RadioGroup>
+
+                            <SeekBar
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_width="40dp"
+
+                                />
+                        </TableRow>
+                    </TableLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        >
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Desplazamiento Ch1"
+                            android:textColor="@color/ap_white"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="10dp"
+                            />
+                        <SeekBar
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/barraX1"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Desplazamiento Ch2"
+                            android:textColor="@color/ap_white"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="10dp"
+                            />
+                        <SeekBar
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/barraX2"
+                            />
+                    </LinearLayout>
+
+                </LinearLayout>
+
                 <TableLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+                 <TableRow
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content">
+                     <RadioGroup
+                         android:layout_width="match_parent"
+                         android:orientation="horizontal"
+                         android:id="@+id/modGroup">
+                         <RadioButton
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:text="Ch1"
+                             android:id="@+id/rbc1"
+                             android:textColor="#ffffff"/>
+                         <RadioButton
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Ch2"
+                             android:id="@+id/rbc2"
+                             android:textColor="#ffffff"
+                             />
+                         <RadioButton
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Dual"
+                             android:id="@+id/rbd"
+                             android:textColor="#ffffff"
+                             android:checked="true"
+                             />
+
+                     </RadioGroup>
+                 </TableRow>
+                    <TableRow android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="30dp"
+                        >
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:text="Flanco de Disparo"
+                            android:textColor="@color/ap_white"
+                            android:layout_marginLeft="18dp"
+                            android:textSize="8pt"
+                            />
+                    </TableRow>
                     <TableRow
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <NumberPicker
-                            android:layout_marginTop="0dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:id="@+id/volDiv"
-                            android:theme="@style/AppTheme"
-                            android:scaleX="0.8"
-                            android:scaleY="0.8"
-                            />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        >
                         <RadioGroup
-                            android:paddingTop="50dp"
-                            android:paddingLeft="40dp"
-                            android:paddingRight="10dp"
-                            android:id="@+id/rgSignalType"
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            android:id="@+id/triggerGroup"
+                            android:layout_gravity="center"
 
                             >
                             <RadioButton
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="AC"
-                                android:id="@+id/rbAC"
-                                android:checked="true"
-                                android:textColor="#ffffff"
-                                />
-                            <RadioButton
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="DC"
-                                android:id="@+id/rbDC"
-
-                                android:textColor="#ffffff"
-                                />
-                        </RadioGroup>
-                    </TableRow>
-                </TableLayout>
-                   <TableLayout
-                       android:layout_width="match_parent"
-                       android:layout_height="wrap_content">
-                    <TableRow
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <RadioGroup
-                            android:layout_width="match_parent"
-                            android:orientation="horizontal"
-                            android:id="@+id/modGroup">
-                            <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Ch1"
-                                android:id="@+id/rbc1"
+                                android:text="H2L"
+                                android:id="@+id/rbH2L"
                                 android:textColor="#ffffff"/>
                             <RadioButton
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Ch2"
-                                android:id="@+id/rbc2"
-                                android:textColor="#ffffff"
-                                />
-                            <RadioButton
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Dual"
-                                android:id="@+id/rbd"
+                                android:text="L2H"
+                                android:id="@+id/rBL2H"
                                 android:textColor="#ffffff"
                                 android:checked="true"
                                 />
 
+
                         </RadioGroup>
                     </TableRow>
-                       <TableRow android:layout_width="match_parent"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:layout_marginTop="30dp"
-                           >
-                           <TextView
-                               android:layout_width="wrap_content"
-                               android:text="Flanco de Disparo"
-                               android:textColor="@color/ap_white"
-                               android:layout_marginLeft="18dp"
-                               android:textSize="8pt"
-                               />
-                       </TableRow>
-                       <TableRow
-                           android:layout_width="match_parent"
-                           android:layout_height="wrap_content"
-                           android:layout_marginTop="20dp"
-                           >
-                           <RadioGroup
-                               android:layout_width="match_parent"
-                               android:orientation="horizontal"
-                               android:id="@+id/triggerGroup"
-                               android:layout_gravity="center"
+                    <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp">
+                    <CheckBox
+                        android:text="Filtro Ch1"
+                        android:textColor="@color/ap_white"
+                        android:layout_gravity="center"
+                        android:id="@+id/filterCheck1"
+                        android:checked="true"
+                        android:layout_width="wrap_content"
+                        />
 
-                               >
-                               <RadioButton
-                                   android:layout_width="wrap_content"
-                                   android:layout_height="wrap_content"
-                                   android:text="H2L"
-                                   android:id="@+id/rbH2L"
-                                   android:textColor="#ffffff"/>
-                               <RadioButton
-                                   android:layout_width="wrap_content"
-                                   android:layout_height="wrap_content"
-                                   android:text="L2H"
-                                   android:id="@+id/rBL2H"
-                                   android:textColor="#ffffff"
-                                   android:checked="true"
-                                   />
+                </TableRow>
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp">
+
+                        <CheckBox
+                            android:text="Filtro Ch2"
+                            android:textColor="@color/ap_white"
+                            android:layout_gravity="center"
+                            android:id="@+id/filterCheck2"
+                            android:checked="true"
+                            />
+                    </TableRow>
 
 
-                           </RadioGroup>
-                       </TableRow>
-                       <TableRow
-                           android:layout_width="match_parent"
-                           android:layout_height="wrap_content"
-                           android:layout_marginTop="20dp">
-                           <TextView
-                               android:id="@+id/textlbl2"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
-                               android:textAppearance="?android:attr/textAppearanceLarge"
-                               android:text="Seg/DIV"
-                               android:textSize="8pt"
-                               android:layout_gravity="center"
-                               android:textColor="#ffffff"
-                               android:visibility="visible"
-                               android:labelFor="@id/np"
-                               android:layout_marginTop="1dp"
-                               android:layout_marginBottom="0dp"
-                               />
-                       </TableRow>
-                       <TableRow
-                           android:layout_width="match_parent"
-                           android:layout_height="wrap_content">
-                           <NumberPicker
-                               android:layout_marginTop="0dp"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
-                               android:layout_gravity="center_horizontal"
-                               android:id="@+id/np"
-                               android:theme="@style/AppTheme"
-                               android:scaleX="0.8"
-                               android:scaleY="0.8"
-                               />
-                       </TableRow>
-                </TableLayout>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp">
+                        <TextView
+                            android:id="@+id/textlbl2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:text="Seg/DIV"
+                            android:textSize="8pt"
+                            android:layout_gravity="center"
+                            android:textColor="#ffffff"
+                            android:visibility="visible"
+                            android:labelFor="@id/np"
+                            android:layout_marginTop="1dp"
+                            android:layout_marginBottom="0dp"
+                            />
+                    </TableRow>
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <NumberPicker
+                            android:layout_marginTop="0dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:id="@+id/np"
+                            android:theme="@style/AppTheme"
+                            android:scaleX="0.8"
+                            android:scaleY="0.8"
+                            />
+                    </TableRow>
+             </TableLayout>
                 <!--<TableLayout-->
                     <!--android:layout_width="match_parent"-->
                     <!--android:layout_height="wrap_content">-->

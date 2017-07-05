@@ -37,5 +37,15 @@
         <item>3</item>
     </string-array>
 
+    <string-array name="nombresDensidad">
+        <item >10.0 (Predeterminda)</item>
+        <item>20.0</item>
+
+    </string-array>
+    <string-array name="valoresDensidad">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
 
 </resources>

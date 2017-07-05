@@ -38,4 +38,12 @@
         android:title="Poner offset"
         android:summary=" coloca un offset a la grafica"
         />
+    <ListPreference
+        android:key="densidadPuntos"
+        android:title="Densidad de Muestreo"
+        android:summary="Define la cantidad de muestras de la señal por division"
+        android:entries="@array/nombresDensidad"
+        android:entryValues="@array/valoresDensidad"
+        android:defaultValue="0"
+        ></ListPreference>
 </PreferenceScreen>
